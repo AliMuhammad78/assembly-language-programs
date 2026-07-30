@@ -1,0 +1,44 @@
+ include irvine32.inc
+
+.data
+    array DWORD 5, 3, 8, 6, 2      ; Array to sort
+    arraysize DWORD lengthof array     ; Number of elements in the array
+    temp DWORD 0                   ; Temporary variable for swapping
+
+.code
+main PROC
+    mov ecx,  arraysize                 ; Outer loop counter (number of passes)
+    dec ecx                        ; Last pass is unnecessary, so size-1 passes
+outer_loop:
+    mov esi, 0                     ; Index of the current element (inner loop)
+    mov ebx, ecx                   ; Inner loop counter
+inner_loop:
+    mov eax, array[esi]            ; Load current element into EAX
+    mov edx, array[esi+4]          ; Load next element into EDX
+    cmp eax, edx                   ; Compare current and next elements
+    jle no_swap                    ; If current <= next, no swap needed
+    ; Swap elements
+    mov temp, eax                  ; Store current element in temp
+    mov array[esi], edx            ; Move next element to current position
+    mov eax, temp                  ; Move temp (current element) to EAX
+    mov array[esi+4], eax          ; Move EAX (current element) to next position
+no_swap:
+    add esi, 4                     ; Move to the next pair of elements
+    dec ebx                        ; Decrement inner loop counter
+    jnz inner_loop                 ; Repeat inner loop if counter != 0
+    dec ecx                        ; Decrement outer loop counter
+    jnz outer_loop                 ; Repeat outer loop if counter != 0
+
+    ; Print the sorted array
+    mov esi, 0                     ; Reset index for printing
+    mov ecx, arraysize                 ; Load size for loop
+print_loop:
+    mov eax, array[esi]            ; Load the current element
+    call WriteInt                  ; Print the element
+    call Crlf                      ; Print a newline
+    add esi, 4                     ; Move to the next element
+    loop print_loop                ; Loop until all elements are printed
+
+    exit
+main ENDP
+END main

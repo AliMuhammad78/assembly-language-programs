@@ -1,0 +1,37 @@
+ include irvine32.inc
+ include macros.inc 
+
+ bsize = 500
+ .data
+ fname byte "hello.txt", 0  ; filename 
+ handler  handle  ?          ; shoro sy start krna ha 
+ data1 byte bsize dup (?)     ; array ka size bsize jitna ha , matlab 500 
+
+ .code 
+ main proc 
+
+; read from file 
+
+mov edx, offset fname 
+ call openinputfile     ;funtion to open the file , it requires name of file to be opened , edx k offset ma likho 
+ mov handler , eax 
+
+
+ mov eax ,handler 
+ mov ecx, bsize 
+ mov edx , offset data1 
+
+ call readfromfile    ; funtion to read from file , requires  3 things  , kahan sy start ( handler sy ) 
+						; kitna read krrooo , ecx ,  store kahan krwana (array ma )
+
+
+
+; display 
+mov edx, offset data1
+call writestring 
+call closefile 
+
+
+ exit 
+ main endp 
+ end main 

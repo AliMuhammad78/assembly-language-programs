@@ -1,0 +1,98 @@
+ include irvine32.inc
+
+.data
+fileA BYTE "fileA.txt", 0
+fileB BYTE "fileB.txt", 0
+tempFile BYTE "temp.txt", 0
+buffer BYTE 256 DUP(0)       ; Buffer for temporary storage
+bytesRead DWORD ?            ; Number of bytes read
+bytesWritten DWORD ?
+
+.code
+main PROC
+    ; Step 1: Open File A
+    mov edx, OFFSET fileA
+    call OpenInput
+    mov esi, eax              ; ESI holds File A handle
+
+    ; Step 2: Open File B
+    mov edx, OFFSET fileB
+    call OpenInput
+    mov edi, eax              ; EDI holds File B handle
+
+    ; Step 3: Create Temporary File
+    mov edx, OFFSET tempFile
+    call CreateOutput
+    mov ebx, eax              ; EBX holds Temp file handle
+
+    ; Step 4: Copy File A to Temp File
+copyToTemp:
+    mov edx, OFFSET buffer
+    mov ecx, 256              ; Buffer size
+    call ReadFromFile
+    cmp eax, 0                ; Check EOF
+    je copyFileBtoFileA
+    mov bytesRead, eax
+
+    ; Write data to temp file
+    mov edx, OFFSET buffer
+    mov ecx, bytesRead
+    call WriteToFile
+    jmp copyToTemp
+
+copyFileBtoFileA:
+    ; Step 5: Reset File B Handle and Copy to File A
+    call CloseFile            ; Close File A
+    mov edx, OFFSET fileB
+    call OpenInput            ; Reopen File B for reading
+    mov edx, OFFSET fileA
+    call CreateOutput         ; Open File A for writing
+
+copyBtoA:
+    mov edx, OFFSET buffer
+    mov ecx, 256
+    call ReadFromFile
+    cmp eax, 0
+    je copyTempToFileB
+    mov bytesRead, eax
+
+    ; Write data to File A
+    mov edx, OFFSET buffer
+    mov ecx, bytesRead
+    call WriteToFile
+    jmp copyBtoA
+
+copyTempToFileB:
+    ; Step 6: Reset Temp Handle and Copy to File B
+    call CloseFile            ; Close File B
+    mov edx, OFFSET tempFile
+    call OpenInput            ; Open Temp file for reading
+    mov edx, OFFSET fileB
+    call CreateOutput         ; Open File B for writing
+
+copyTempToB:
+    mov edx, OFFSET buffer
+    mov ecx, 256
+    call ReadFromFile
+    cmp eax, 0
+    je cleanup
+    mov bytesRead, eax
+
+    ; Write data to File B
+    mov edx, OFFSET buffer
+    mov ecx, bytesRead
+    call WriteToFile
+    jmp copyTempToB
+
+cleanup:
+    ; Step 7: Close All Files
+    mov eax, esi
+    call CloseFile            ; Close File A
+    mov eax, edi
+    call CloseFile            ; Close File B
+    mov eax, ebx
+    call CloseFile            ; Close Temp file
+
+    exit
+main ENDP
+END main

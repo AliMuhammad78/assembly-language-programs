@@ -1,0 +1,67 @@
+include irvine32.inc
+
+.data
+    prompt BYTE "Enter a number: ", 0
+    not_prime_msg BYTE "The number is not prime.", 0
+    prime_msg BYTE "The number is prime.", 0
+    newline BYTE 0
+
+.code
+main PROC
+    ; Prompt the user for input
+    lea edx, prompt               ; Load address of the prompt message
+    call WriteString              ; Display the prompt
+    call ReadInt                  ; Read the user's input into EAX
+
+    ; Check if the number is less than or equal to 1
+    mov ebx, eax                  ; Copy the input number into EBX
+    cmp eax, 1                    ; Compare EAX with 1
+    jg check_prime                ; If EAX > 1, continue to check primality
+    ; Number is not prime
+    lea edx, not_prime_msg        ; Load address of "not prime" message
+    call WriteString              ; Print the message
+    jmp done                      ; Exit program
+
+check_prime:
+    ; Handle numbers 2 and 3 (they are prime)
+    cmp eax, 3                    ; Compare EAX with 3
+    jle is_prime                  ; If EAX <= 3, it is prime
+
+    ; Check divisibility by 2
+    mov edx, 0                    ; Clear EDX for division
+    mov ecx, 2                    ; Divisor = 2
+    div ecx                       ; EAX / 2, remainder in EDX
+    cmp edx, 0                    ; Check if remainder is 0
+    je not_prime                  ; If divisible by 2, it's not prime
+
+    ; Check divisors from 3 to sqrt(number)
+    mov ecx, 3                    ; Start divisor at 3
+prime_loop:
+    mov eax, ebx                  ; Reload the input number into EAX
+    mov edx, 0                    ; Clear EDX for division
+    div ecx                       ; EAX / ECX, remainder in EDX
+    cmp edx, 0                    ; Check if remainder is 0
+    je not_prime                  ; If divisible, it's not prime
+
+    add ecx, 2                    ; Move to the next odd divisor
+    mov eax, ecx                  ; Load the current divisor into EAX
+    mul eax                       ; Square the divisor (ECX * ECX)
+    cmp eax, ebx                  ; Compare divisor^2 with the number
+    jl prime_loop                 ; If divisor^2 < number, continue loop
+
+is_prime:
+    ; Number is prime
+    lea edx, prime_msg            ; Load address of "prime" message
+    call WriteString              ; Print the message
+    jmp done                      ; Exit program
+
+not_prime:
+    ; Number is not prime
+    lea edx, not_prime_msg        ; Load address of "not prime" message
+    call WriteString              ; Print the message
+
+done:
+    call Crlf                     ; Print a newline
+    exit
+main ENDP
+END main

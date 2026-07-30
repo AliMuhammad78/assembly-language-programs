@@ -1,0 +1,29 @@
+ include irvine32.inc
+ .data 
+ num dd ? 
+ facto dd 1   
+ getingnum byte "Enter the number to find the factorial " ,0
+ result byte "The factorial of added number is " ,0
+
+ .code 
+ main proc 
+ mov edx, offset getingnum 
+ call writestring 
+ call readint 
+ mov num , eax 
+ mov ecx, num 
+ mov eax, 1 
+ Factorialloop : 
+ mul ecx 
+ loop Factorialloop 
+  
+ mov facto ,eax 
+ mov edx, offset result 
+ call writestring 
+ mov eax , facto 
+ call writeint 
+  call crlf 
+
+ exit 
+ main endp 
+ end main 

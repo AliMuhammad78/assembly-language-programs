@@ -1,0 +1,49 @@
+ include irvine32.inc 
+ datas = 501 ; mean iss sy zyada nahi store hon gy characters
+ .data 
+ filen byte "hello.text" ,0 
+ handler handle ?   ;to store the first postion of file 
+ data byte datas dup (?)   ; array to store values entered by user , it's size is 501 , ? mean user value will be written 
+ datalength dd ?
+ byteswritten dd ?
+ str1 byte "The data entered was =" ,0
+ .code 
+ main proc 
+
+ ; creating new file 
+ mov edx , offset filen
+ call createoutputfile  ; this is a funtion to create a file , it requires one thing (the name of file)
+							; for this make variable and store name of file in it 
+mov handler , eax           ; first position of file is placed in handler of handle type 
+
+
+	; read user input  
+	mov eax , 0 
+	mov ecx , datas   ; to loop for 501 times 
+	mov edx , offset data   ; to enter data in array (named data) 
+	call readstring    ; function 
+	mov datalength , eax   ; taa k ham ko pta chly k kitny alphabets input kiye han 
+
+	; write data to file 
+
+	mov  eax ,handler 
+	mov edx , offset data 
+	mov ecx , datalength    ; kitni baar loop chla k lihoon  , mean kitny characters 
+	call writetofile    ;funtion to write data to file , require 3 things , where to start, konsa data likhna, aur size kya data ka mtlab kitna likha ha   
+
+	mov byteswritten , eax   ; mtlab kitny bytes ab tak likhy ja chuky han 
+
+	call closefile    ; funtion to close the file 
+
+
+	; to display the data , jo k byteswritten ma ha abi 
+	mov edx, offset str1 
+	call writestring 
+	mov eax, byteswritten 
+	call writeint 
+	  
+
+
+ exit 
+ main endp 
+ end main 

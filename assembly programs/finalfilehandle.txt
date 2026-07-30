@@ -1,0 +1,133 @@
+include irvine32.inc
+
+bsize = 500
+datasize = 501
+
+.data
+; File names
+fileA byte "fileA.txt", 0
+fileB byte "fileB.txt", 0
+temporaryFile byte "temp.txt", 0
+
+; File handlers
+handlerA handle ?
+handlerB handle ?
+handlerTemp handle ?
+
+; Buffers
+dataA byte datasize dup (?)      ; Buffer for FileA
+dataB byte datasize dup (?)      ; Buffer for FileB
+dataTemp byte datasize dup (?)   ; Buffer for TemporaryFile
+
+datalengthA dd ?
+datalengthB dd ?
+
+str1 byte "Data switched successfully!", 0
+
+.code
+main proc
+
+; Step 1: Create FileA and write data to it
+mov edx, offset fileA
+call createoutputfile
+mov handlerA, eax
+
+mov eax, 0
+mov ecx, datasize
+mov edx, offset dataA
+call readstring
+mov datalengthA, eax
+
+mov eax, handlerA
+mov edx, offset dataA
+mov ecx, datalengthA
+call writetofile
+call closefile
+
+; Step 2: Create FileB and write data to it
+mov edx, offset fileB
+call createoutputfile
+mov handlerB, eax
+
+mov eax, 0
+mov ecx, datasize
+mov edx, offset dataB
+call readstring
+mov datalengthB, eax
+
+mov eax, handlerB
+mov edx, offset dataB
+mov ecx, datalengthB
+call writetofile
+call closefile
+
+; Step 3: Read data from FileA and write to TemporaryFile
+mov edx, offset fileA
+call openinputfile
+mov handlerA, eax
+
+mov eax, handlerA
+mov ecx, datasize
+mov edx, offset dataTemp
+call readfromfile
+call closefile
+
+mov edx, offset temporaryFile
+call createoutputfile
+mov handlerTemp, eax
+
+mov eax, handlerTemp
+mov edx, offset dataTemp
+mov ecx, datalengthA
+call writetofile
+call closefile
+
+; Step 4: Read data from FileB and write to FileA
+mov edx, offset fileB
+call openinputfile
+mov handlerB, eax
+
+mov eax, handlerB
+mov ecx, datasize
+mov edx, offset dataTemp
+call readfromfile
+call closefile
+
+mov edx, offset fileA
+call createoutputfile
+mov handlerA, eax
+
+mov eax, handlerA
+mov edx, offset dataTemp
+mov ecx, datalengthB
+call writetofile
+call closefile
+
+; Step 5: Read data from TemporaryFile and write to FileB
+mov edx, offset temporaryFile
+call openinputfile
+mov handlerTemp, eax
+
+mov eax, handlerTemp
+mov ecx, datasize
+mov edx, offset dataTemp
+call readfromfile
+call closefile
+
+mov edx, offset fileB
+call createoutputfile
+mov handlerB, eax
+
+mov eax, handlerB
+mov edx, offset dataTemp
+mov ecx, datalengthA
+call writetofile
+call closefile
+
+; Step 6: Display success message
+mov edx, offset str1
+call writestring
+
+exit
+main endp
+end main
